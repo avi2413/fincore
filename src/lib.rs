@@ -1,3 +1,4 @@
+mod analytics;
 mod errors;
 mod models;
 mod pyconvert;
@@ -107,5 +108,6 @@ fn _fincore(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(list_market_instruments, module)?)?;
     module.add_function(wrap_pyfunction!(list_bond_series, module)?)?;
     module.add_function(wrap_pyfunction!(fetch_bond_yield_series, module)?)?;
+    module.add_function(wrap_pyfunction!(analytics::compute_bar_metrics, module)?)?;
     Ok(())
 }

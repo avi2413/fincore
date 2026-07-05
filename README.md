@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/v/fincore-py.svg?color=111111&label=PyPI" alt="PyPI version"></a>
-  <a href="https://test.pypi.org/project/fincore-py/"><img src="https://img.shields.io/badge/TestPyPI-dev-7A1E1E" alt="TestPyPI dev builds"></a>
+  <a href="https://pypi.org/project/fincore-py/#history"><img src="https://img.shields.io/badge/PyPI-dev%20builds-7A1E1E" alt="PyPI dev builds"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/ci.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/ci.yml/badge.svg" alt="CI workflow"></a>
   <a href="https://codecov.io/gh/avi2413/fincore"><img src="https://codecov.io/gh/avi2413/fincore/branch/main/graph/badge.svg" alt="Codecov coverage"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/publish.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/publish.yml/badge.svg" alt="Publish workflow"></a>
@@ -38,11 +38,11 @@ Implemented today:
 - Delayed polling streams for latest bars.
 - Kafka-ready event envelopes.
 - Optional Kafka sink via `fincore-py[kafka]`.
+- Batch and streaming metric events via `fincore.analytics`.
 - Sphinx documentation under `docs/`.
 
 Reserved for later:
 
-- `fincore.analytics` for streaming and batch analytics.
 - TimescaleDB sink.
 - Additional paid/free source adapters.
 - Trading or order execution, which is intentionally out of scope.
@@ -60,7 +60,10 @@ fincore
     optional Kafka sink
 
   analytics
-    reserved for future custom metrics
+    MetricEngine
+    MetricSpec
+    normalized metric events
+    external row normalization
 
 Rust extension
   Yahoo Finance bar fetching
@@ -333,6 +336,32 @@ Stream events use the envelope shape below, with source-specific values nested i
 }
 ```
 
+Metric event:
+
+```python
+{
+    "event_type": "metric",
+    "metric": "return.simple",
+    "metric_name": "return.simple",
+    "source": "fincore.analytics",
+    "symbol": "AAPL",
+    "event_time": "2024-01-02T00:00:00+00:00",
+    "value": 0.0123,
+    "unit": "ratio",
+    "window": {
+        "kind": "bars",
+        "size": 1,
+    },
+    "inputs": {
+        "input_field": "close",
+        "close": 101.23,
+    },
+    "metadata": {
+        "interval": "1d",
+    },
+}
+```
+
 ## Streams
 
 Historical replay:
@@ -435,22 +464,68 @@ tox
 
 CI runs `tox`, `cargo fmt --check`, and `cargo check` from `.github/workflows/ci.yml`.
 
-## Future Analytics Direction
+## Analytics
 
-`fincore.analytics` will consume the same event envelopes produced by `fincore.data`.
+`fincore.analytics` consumes normalized bars, stream envelopes, or external row mappings. Python owns the API and state management; the numeric batch calculations run in the Rust extension.
 
-Planned metric families:
+Batch metrics:
+
+```python
+from fincore.analytics import MetricEngine, MetricSpec
+
+engine = MetricEngine()
+
+events = engine.compute(
+    bars,
+    metrics=[
+        "return.simple",
+        "return.log",
+        MetricSpec("momentum.roc", window=3),
+        MetricSpec("volatility.rolling", window=5),
+        MetricSpec("auc.window", window=5),
+    ],
+)
+```
+
+Streaming metrics:
+
+```python
+async for bar_event in client.replay_bars("Apple", "2024-01-01", "2024-01-10"):
+    for metric_event in engine.update(bar_event):
+        print(metric_event)
+```
+
+External rows, for example from a database:
+
+```python
+events = engine.compute(
+    db_rows,
+    field_map={
+        "symbol": "ticker",
+        "event_time": "ts",
+        "close": "close_price",
+        "volume": "volume",
+    },
+)
+```
+
+Implemented metric families:
 
 - returns and log returns
-- rolling return
 - momentum
 - first derivative / velocity
 - second derivative / acceleration
 - rolling volatility
-- realized volatility
-- AUC over price, returns, and momentum
+- AUC over rolling price windows
+- current drawdown
+
+Planned next:
+
+- yield spreads
 - VWAP and volume metrics
+- realized volatility variants
 - direction and trend-regime signals
+- linked temporal graph snapshots
 
 The goal is custom analytics on the fly for streaming data:
 
@@ -463,17 +538,18 @@ async for metric_event in engine.run(client.stream_bars(["Apple"], interval="1m"
 
 Python package versions are derived from git tags through `setuptools-scm`.
 
-For the first pre-release:
+For a beta pre-release:
 
 ```bash
-git tag v0.1.0a0
-git push origin v0.1.0a0
+git tag v0.1.0b0
+git push origin v0.1.0b0
 ```
 
 The publish workflow at `.github/workflows/publish.yml` builds distributions for both main pushes and version tags.
 
-- Pushes to `main` publish source-distribution development builds to TestPyPI.
-- Tags like `v0.1.0a0` build release wheels plus a source distribution and publish them to PyPI.
+- Pushes to `main` publish source-distribution development builds to PyPI, using versions like `0.1.0.dev123`.
+- Tags like `v0.1.0b0` build beta wheels plus a source distribution and publish them to PyPI.
+- Later stable tags like `v0.1.0` can use the same tagged release path.
 
 Configure PyPI trusted publishing with:
 
@@ -483,14 +559,6 @@ Workflow: publish.yml
 Environment: pypi
 ```
 
-Configure TestPyPI trusted publishing with:
-
-```text
-Repository: avi2413/fincore
-Workflow: publish.yml
-Environment: testpypi
-```
-
 ## Status
 
-Early alpha implementation stage. The data client is usable for discovery, historical bars, yield series, replay streams, polling streams, and Kafka publishing for personal research and prototyping. Analytics is planned next.
+Early alpha implementation stage. The data client is usable for discovery, historical bars, yield series, replay streams, polling streams, and Kafka publishing for personal research and prototyping. The analytics layer now emits normalized metric events for batch and streaming workflows.

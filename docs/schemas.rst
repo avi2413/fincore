@@ -111,3 +111,34 @@ Bond yield stream event
        },
        "raw": "2024-01-02,4.0",
    }
+
+Metric event
+------------
+
+Returned by ``MetricEngine.compute()`` and ``MetricEngine.update()``.
+
+.. code-block:: python
+
+   {
+       "event_type": "metric",
+       "metric": "return.simple",
+       "metric_name": "return.simple",
+       "source": "fincore.analytics",
+       "symbol": "AAPL",
+       "event_time": "2024-01-02T00:00:00+00:00",
+       "value": 0.0123,
+       "unit": "ratio",
+       "window": {
+           "kind": "bars",
+           "size": 1,
+       },
+       "inputs": {
+           "input_field": "close",
+           "close": 101.23,
+           "previous_event_time": "2024-01-01T00:00:00+00:00",
+       },
+       "metadata": {
+           "interval": "1d",
+           "volume": 123456.0,
+       },
+   }

@@ -90,14 +90,14 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: dist/*
 
-  publish-testpypi:
-    name: Publish development build to TestPyPI
+  publish-dev-pypi:
+    name: Publish development build to PyPI
     needs: [build-sdist]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
-      url: https://test.pypi.org/project/fincore-py/
+      name: pypi
+      url: https://pypi.org/project/fincore-py/
     steps:
       - name: Download distributions
         uses: actions/download-artifact@v4
@@ -105,14 +105,13 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Publish distributions to TestPyPI
+      - name: Publish development distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: https://test.pypi.org/legacy/
           skip-existing: true
 
   publish-pypi:
-    name: Publish tagged release to PyPI
+    name: Publish tagged beta/release to PyPI
     needs: [build-sdist, build-wheels]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest

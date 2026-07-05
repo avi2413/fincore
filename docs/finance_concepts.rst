@@ -126,3 +126,5 @@ Excess AUC
 These are not universal finance metrics by default; they are custom analytics
 building blocks that can be useful for direction and regime detection.
 
+For exact formulas and the current ``fincore.analytics`` implementation, see
+:doc:`analytics_calculations`.

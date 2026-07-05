@@ -23,6 +23,7 @@ The package imports as ``fincore`` and currently focuses on:
    concepts
    schemas
    finance_concepts
+   analytics_calculations
    brand
    streaming
    api

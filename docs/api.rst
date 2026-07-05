@@ -41,3 +41,14 @@ Kafka
 
 .. automodule:: fincore.data.kafka
    :members:
+
+Analytics
+---------
+
+.. autoclass:: fincore.analytics.MetricEngine
+   :members:
+
+.. autoclass:: fincore.analytics.MetricSpec
+   :members:
+
+.. autofunction:: fincore.analytics.normalize_bar

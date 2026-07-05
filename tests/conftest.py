@@ -121,10 +121,57 @@ def _install_fake_rust_core() -> None:
             }
         ]
 
+    def compute_bar_metrics(
+        bars: list[dict[str, Any]],
+        specs: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        fake.last_metric_args = (bars, specs)
+        closes: dict[str, list[float]] = {}
+        events: list[dict[str, Any]] = []
+        for bar in bars:
+            symbol = bar["symbol"]
+            close = float(bar["close"])
+            history = closes.setdefault(symbol, [])
+            history.append(close)
+            for spec in specs:
+                name = spec["name"]
+                window = int(spec.get("window", 1))
+                value = None
+                unit = "ratio"
+                if name == "return.simple" and len(history) >= 2:
+                    value = (history[-1] - history[-2]) / history[-2]
+                elif name == "momentum.roc" and len(history) > window:
+                    value = (history[-1] - history[-1 - window]) / history[-1 - window]
+                elif name == "auc.window" and len(history) >= window:
+                    window_values = history[-window:]
+                    value = sum((left + right) / 2 for left, right in zip(window_values, window_values[1:]))
+                    unit = "price_bars"
+
+                if value is None:
+                    continue
+
+                events.append(
+                    {
+                        "event_type": "metric",
+                        "metric": spec.get("output_name") or name,
+                        "metric_name": name,
+                        "source": "fincore.analytics",
+                        "symbol": symbol,
+                        "event_time": bar["event_time"],
+                        "value": value,
+                        "unit": unit,
+                        "window": {"kind": "bars", "size": window},
+                        "inputs": {"input_field": spec.get("input_field", "close"), "close": close},
+                        "metadata": {"interval": bar.get("interval")},
+                    }
+                )
+        return events
+
     fake.list_market_instruments = list_market_instruments
     fake.list_bond_series = list_bond_series
     fake.fetch_yahoo_bars = fetch_yahoo_bars
     fake.fetch_bond_yield_series = fetch_bond_yield_series
+    fake.compute_bar_metrics = compute_bar_metrics
     sys.modules["fincore._fincore"] = fake
 
 

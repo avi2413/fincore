@@ -64,9 +64,13 @@ Use ``market="all"`` to search all implemented contexts.
 Analytics namespace
 -------------------
 
-``fincore.analytics`` is reserved for future streaming analytics. The intended
-direction is to consume the same event envelopes produced by ``fincore.data`` and
-emit enriched analytics events.
+``fincore.analytics`` consumes the same bars and event envelopes produced by
+``fincore.data`` and emits normalized metric events. It also accepts external
+rows from databases or files through field maps, so downstream applications do
+not need to use ``DataClient`` directly.
+
+Python handles metric specifications, input normalization, and streaming state.
+The numeric batch calculations run in the Rust extension.
 
 Sources
 -------
