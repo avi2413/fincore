@@ -1,0 +1,12 @@
+# Runtime has no third-party Python dependencies yet.
+#
+# Build/development dependencies for installing the local Rust extension:
+setuptools>=80
+setuptools-rust>=1.10
+setuptools-scm>=8
+wheel
+build
+twine
+
+# Optional Kafka support:
+# aiokafka>=0.12

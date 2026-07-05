@@ -1,0 +1,6 @@
+# Build requirements plus optional Kafka support for local development.
+-r requirements.txt
+aiokafka>=0.12
+
+# Keep the package installed in editable mode with the kafka extra metadata.
+-e .[kafka]

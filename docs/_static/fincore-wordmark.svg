@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="180" viewBox="0 0 820 180" role="img" aria-labelledby="title desc">
+  <title id="title">fincore wordmark</title>
+  <desc id="desc">Lean noir brutalist fincore wordmark with a restrained market signal mark.</desc>
+  <rect width="820" height="180" fill="#0D0D0D"/>
+  <g transform="translate(52 48)">
+    <rect x="0" y="0" width="84" height="84" fill="none" stroke="#B8B2A4" stroke-width="2"/>
+    <path d="M16 56 H31 L42 42 L53 48 L68 25" fill="none" stroke="#7A1E1E" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+    <path d="M16 68 H68" stroke="#2A2A2A" stroke-width="2"/>
+    <path d="M16 16 V68" stroke="#2A2A2A" stroke-width="2"/>
+  </g>
+  <text x="164" y="96" fill="#E7E0D0" font-family="'Arial Narrow', 'Helvetica Neue Condensed Bold', 'Roboto Condensed', Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="6">FINCORE</text>
+  <path d="M166 111 H474" stroke="#7A1E1E" stroke-width="3"/>
+  <text x="166" y="139" fill="#8F8A80" font-family="'Arial Narrow', 'Roboto Condensed', Arial, sans-serif" font-size="17" letter-spacing="4">MARKET DATA INFRASTRUCTURE</text>
+</svg>

@@ -1,0 +1,50 @@
+[build-system]
+requires = [
+  "setuptools>=80",
+  "setuptools-rust>=1.10",
+  "setuptools-scm>=8",
+  "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fincore-py"
+dynamic = ["version"]
+description = "Python-facing financial market data access library powered by Rust."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "fincore contributors" }
+]
+keywords = ["finance", "market-data", "rust", "python"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Rust",
+  "Topic :: Office/Business :: Financial",
+]
+
+[project.optional-dependencies]
+kafka = [
+  "aiokafka>=0.12",
+]
+docs = [
+  "furo>=2024.8.6",
+  "sphinx>=8",
+]
+
+[project.urls]
+Documentation = "https://avi2413.github.io/fincore/"
+Repository = "https://github.com/avi2413/fincore"
+
+[tool.setuptools]
+package-dir = { "" = "python" }
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.setuptools_scm]
+fallback_version = "0.1.0a0"
+local_scheme = "no-local-version"
+version_file = "python/fincore/_version.py"
