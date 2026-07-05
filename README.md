@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/v/fincore-py.svg?color=111111&label=PyPI&logo=pypi&logoColor=white" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/dm/fincore-py.svg?color=7A1E1E&label=downloads&logo=pypi&logoColor=white" alt="PyPI downloads"></a>
+  <a href="https://pepy.tech/project/fincore-py"><img src="https://static.pepy.tech/badge/fincore-py/month" alt="Monthly downloads"></a>
   <a href="https://pypi.org/project/fincore-py/#history"><img src="https://img.shields.io/badge/PyPI-dev%20builds-7A1E1E?logo=pypi&logoColor=white" alt="PyPI dev builds"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.14-111111?logo=python&logoColor=white" alt="Python 3.14"></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-core-7A1E1E?logo=rust&logoColor=white" alt="Rust core"></a>
