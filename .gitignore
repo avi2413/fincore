@@ -1,6 +1,9 @@
 /.eggs/
 /.pytest_cache/
 /.ruff_cache/
+/.tox/
+/.coverage
+/coverage.xml
 /build/
 /dist/
 /target/

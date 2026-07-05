@@ -8,6 +8,8 @@ use crate::models::{Bar, BondSeries, Instrument, Observation};
 const YAHOO_CHART_URL: &str = "https://query1.finance.yahoo.com/v8/finance/chart/";
 const NASDAQ_LISTED_URL: &str = "https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt";
 const OTHER_LISTED_URL: &str = "https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt";
+const ASX_LISTED_URL: &str = "https://www.asx.com.au/asx/research/ASXListedCompanies.csv";
+const NSE_LISTED_URL: &str = "https://archives.nseindia.com/content/equities/EQUITY_L.csv";
 const FRED_CSV_URL: &str = "https://fred.stlouisfed.org/graph/fredgraph.csv";
 
 #[derive(Debug, Deserialize)]
@@ -85,6 +87,25 @@ fn parse_f64(value: &str, line: &str) -> Result<f64, FincoreError> {
     value
         .parse::<f64>()
         .map_err(|_| FincoreError::InvalidCsv(line.to_string()))
+}
+
+/// Try to fetch a text resource without making optional directories fatal.
+///
+/// :param client: Shared HTTP client.
+/// :type client: reqwest::blocking::Client
+/// :param url: Resource URL.
+/// :type url: str
+/// :returns: Optional response text.
+/// :rtype: Option[String]
+fn fetch_optional_text(client: &reqwest::blocking::Client, url: &str) -> Option<String> {
+    client
+        .get(url)
+        .send()
+        .ok()?
+        .error_for_status()
+        .ok()?
+        .text()
+        .ok()
 }
 
 /// Fetch daily bars from Yahoo's public chart endpoint and normalize them.
@@ -195,13 +216,23 @@ pub fn fetch_symbol_directory_impl() -> Result<Vec<Instrument>, FincoreError> {
     let mut instruments = Vec::new();
     instruments.extend(parse_nasdaq_listed(&nasdaq));
     instruments.extend(parse_other_listed(&other));
+    if let Some(asx) = fetch_optional_text(&client, ASX_LISTED_URL) {
+        instruments.extend(parse_asx_listed(&asx));
+    }
+    if let Some(nse) = fetch_optional_text(&client, NSE_LISTED_URL) {
+        instruments.extend(parse_nse_listed(&nse));
+    }
 
     if instruments.is_empty() {
         return Err(FincoreError::EmptyResponse);
     }
 
-    instruments.sort_by(|left, right| left.symbol.cmp(&right.symbol));
-    instruments.dedup_by(|left, right| left.symbol == right.symbol);
+    instruments.sort_by(|left, right| {
+        left.market
+            .cmp(&right.market)
+            .then_with(|| left.symbol.cmp(&right.symbol))
+    });
+    instruments.dedup_by(|left, right| left.market == right.market && left.symbol == right.symbol);
     Ok(instruments)
 }
 
@@ -231,7 +262,10 @@ fn parse_nasdaq_listed(text: &str) -> Vec<Instrument> {
         instruments.push(Instrument {
             source: "nasdaq_trader".to_string(),
             symbol: symbol.to_string(),
+            yahoo_symbol: symbol.to_string(),
             name: name.to_string(),
+            market: "US".to_string(),
+            currency: "USD".to_string(),
             asset_class: if is_etf { "etf" } else { "stock" }.to_string(),
             exchange: Some("NASDAQ".to_string()),
             is_etf,
@@ -268,9 +302,105 @@ fn parse_other_listed(text: &str) -> Vec<Instrument> {
         instruments.push(Instrument {
             source: "nasdaq_trader".to_string(),
             symbol: symbol.to_string(),
+            yahoo_symbol: symbol.to_string(),
             name: name.to_string(),
+            market: "US".to_string(),
+            currency: "USD".to_string(),
             asset_class: if is_etf { "etf" } else { "stock" }.to_string(),
             exchange: fields.get(2).map(|value| value.trim().to_string()),
+            is_etf,
+            raw: line.to_string(),
+        });
+    }
+
+    instruments
+}
+
+/// Parse the ASX listed companies directory.
+///
+/// :param text: Raw comma-delimited source response.
+/// :type text: str
+/// :returns: Normalized Australian instruments.
+/// :rtype: Vec[Instrument]
+fn parse_asx_listed(text: &str) -> Vec<Instrument> {
+    let mut instruments = Vec::new();
+
+    for (index, line) in text.lines().enumerate() {
+        if index == 0 || line.trim().is_empty() {
+            continue;
+        }
+
+        let fields = split_csv_line(line);
+        if fields.len() < 2 {
+            continue;
+        }
+
+        let symbol = fields[0].trim_matches('"').trim();
+        let name = fields[1].trim_matches('"').trim();
+        if symbol.is_empty() || name.is_empty() || symbol.eq_ignore_ascii_case("ASX code") {
+            continue;
+        }
+
+        let lower_name = name.to_ascii_lowercase();
+        let is_etf = lower_name.contains(" etf")
+            || lower_name.contains("exchange traded")
+            || lower_name.contains("fund");
+
+        instruments.push(Instrument {
+            source: "asx".to_string(),
+            symbol: symbol.to_string(),
+            yahoo_symbol: format!("{symbol}.AX"),
+            name: name.to_string(),
+            market: "AU".to_string(),
+            currency: "AUD".to_string(),
+            asset_class: if is_etf { "etf" } else { "stock" }.to_string(),
+            exchange: Some("ASX".to_string()),
+            is_etf,
+            raw: line.to_string(),
+        });
+    }
+
+    instruments
+}
+
+/// Parse the NSE equity list directory.
+///
+/// :param text: Raw comma-delimited source response.
+/// :type text: str
+/// :returns: Normalized Indian instruments.
+/// :rtype: Vec[Instrument]
+fn parse_nse_listed(text: &str) -> Vec<Instrument> {
+    let mut instruments = Vec::new();
+
+    for (index, line) in text.lines().enumerate() {
+        if index == 0 || line.trim().is_empty() {
+            continue;
+        }
+
+        let fields = split_csv_line(line);
+        if fields.len() < 3 {
+            continue;
+        }
+
+        let symbol = fields[0].trim_matches('"').trim();
+        let name = fields[1].trim_matches('"').trim();
+        let series = fields[2].trim_matches('"').trim();
+        if symbol.is_empty() || name.is_empty() || series != "EQ" {
+            continue;
+        }
+
+        let lower_name = name.to_ascii_lowercase();
+        let is_etf = lower_name.contains(" etf") || lower_name.contains("exchange traded");
+
+        instruments.push(Instrument {
+            source: "nse".to_string(),
+            symbol: symbol.to_string(),
+            yahoo_symbol: format!("{symbol}.NS"),
+            name: name.to_string(),
+            market: "IN".to_string(),
+            currency: "INR".to_string(),
+            asset_class: if is_etf { "etf" } else { "stock" }.to_string(),
+            exchange: Some("NSE".to_string()),
             is_etf,
             raw: line.to_string(),
         });

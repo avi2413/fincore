@@ -40,6 +40,31 @@ SUPPORTED_INTERVALS = {
     "3mo",
 }
 
+SUPPORTED_MARKETS = {
+    "US",
+    "AU",
+    "IN",
+}
+
+_MARKET_ALIASES = {
+    "america": "US",
+    "american": "US",
+    "aus": "AU",
+    "australia": "AU",
+    "australian": "AU",
+    "india": "IN",
+    "indian": "IN",
+    "nse": "IN",
+    "nyse": "US",
+    "nasdaq": "US",
+    "asx": "AU",
+    "unitedstates": "US",
+    "usa": "US",
+    "us": "US",
+    "au": "AU",
+    "in": "IN",
+}
+
 _INTERVAL_ALIASES = {
     "1min": "1m",
     "1minute": "1m",
@@ -164,6 +189,42 @@ def normalize_interval(interval: str) -> str:
     return normalized
 
 
+def normalize_market(market: str) -> str:
+    """Normalize a market/country context.
+
+    :param market: Market code or country-like value such as ``"US"`` or ``"Australia"``.
+    :type market: str
+    :returns: Canonical market code.
+    :rtype: str
+    :raises ValueError: If the market is unsupported.
+    """
+
+    normalized = str(market).strip().lower().replace(" ", "")
+    normalized = _MARKET_ALIASES.get(normalized, normalized.upper())
+    if normalized not in SUPPORTED_MARKETS:
+        supported = ", ".join(sorted(SUPPORTED_MARKETS))
+        raise ValueError(f"unsupported market {market!r}; supported markets: {supported}")
+    return normalized
+
+
+def normalize_markets(markets: Any) -> set[str]:
+    """Normalize one or more market contexts.
+
+    :param markets: Single market, iterable of markets, or ``"all"``.
+    :type markets: Any
+    :returns: Canonical market code set.
+    :rtype: set[str]
+    """
+
+    if markets is None:
+        return {"US"}
+    if isinstance(markets, str) and markets.strip().lower() in {"all", "global", "*"}:
+        return set(SUPPORTED_MARKETS)
+    if isinstance(markets, str):
+        return {normalize_market(markets)}
+    return {normalize_market(market) for market in markets}
+
+
 def coerce_yahoo_period(start: Any, end: Any, interval: str) -> tuple[int, int, str]:
     """Normalize a user range into Yahoo period timestamps and interval.
 
@@ -270,10 +331,11 @@ def score_instrument(query: str, instrument: dict[str, Any]) -> tuple[float, str
     """
 
     symbol = normalize_search_text(instrument["symbol"])
+    yahoo_symbol = normalize_search_text(str(instrument.get("yahoo_symbol", "")))
     name = normalize_search_text(instrument["name"])
     maturity = normalize_search_text(str(instrument.get("maturity", "")))
 
-    if query == symbol:
+    if query == symbol or (yahoo_symbol and query == yahoo_symbol):
         return 1.0, "exact_symbol"
     if query == name:
         return 0.99, "exact_name"
@@ -282,6 +344,7 @@ def score_instrument(query: str, instrument: dict[str, Any]) -> tuple[float, str
 
     candidates = [
         (symbol, "symbol"),
+        (yahoo_symbol, "yahoo_symbol"),
         (name, "name"),
         (f"{symbol} {name}".strip(), "symbol_name"),
         (maturity, "maturity"),

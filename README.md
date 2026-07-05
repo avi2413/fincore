@@ -5,6 +5,8 @@
 <p align="center">
   <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/v/fincore-py.svg?color=111111&label=PyPI" alt="PyPI version"></a>
   <a href="https://test.pypi.org/project/fincore-py/"><img src="https://img.shields.io/badge/TestPyPI-dev-7A1E1E" alt="TestPyPI dev builds"></a>
+  <a href="https://github.com/avi2413/fincore/actions/workflows/ci.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/ci.yml/badge.svg" alt="CI workflow"></a>
+  <a href="https://codecov.io/gh/avi2413/fincore"><img src="https://codecov.io/gh/avi2413/fincore/branch/main/graph/badge.svg" alt="Codecov coverage"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/publish.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/publish.yml/badge.svg" alt="Publish workflow"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/docs.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/docs.yml/badge.svg" alt="Docs workflow"></a>
   <a href="https://avi2413.github.io/fincore/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-111111" alt="Documentation"></a>
@@ -17,7 +19,9 @@
 
 The package is designed for software and data engineers who understand systems, streams, schemas, and downstream storage, but may not yet know finance. The motive is to create a financial data product with a very low barrier of use and understanding: ask for `"Apple"`, get `AAPL`; ask for `"10 year treasury"`, get a usable yield series; ask for a recent minute range, get normalized market events that can flow into Kafka, TimescaleDB, notebooks, or future analytics.
 
-The Python import name is `fincore`. The PyPI distribution name is planned as `fincore-py` because `fincore` is already used by another project on PyPI.
+This is a personal research project and an early alpha package. It is not a production-grade market data client, trading system, investment tool, or source of financial advice. Free public data sources can be delayed, incomplete, rate limited, schema-changing, or unavailable.
+
+The Python import name is `fincore`. The PyPI distribution name is `fincore-py`.
 
 ## Current Scope
 
@@ -25,7 +29,7 @@ The Python import name is `fincore`. The PyPI distribution name is planned as `f
 
 Implemented today:
 
-- Stock and ETF discovery from public Nasdaq Trader symbol directories.
+- Stock and ETF discovery across US, Australian, and Indian market contexts.
 - Bond/yield series discovery for public US Treasury FRED series.
 - Fuzzy instrument search and symbol resolution.
 - Yahoo Finance OHLCV bars for daily and intraday intervals.
@@ -49,6 +53,7 @@ Reserved for later:
 fincore
   data
     DataClient
+    market contexts: US, AU, IN
     source descriptors
     interval/date utilities
     event envelopes
@@ -59,7 +64,7 @@ fincore
 
 Rust extension
   Yahoo Finance bar fetching
-  Nasdaq Trader directory parsing
+  Nasdaq Trader, ASX, and NSE directory parsing
   FRED yield fetching
   normalized Python dict conversion
 ```
@@ -84,6 +89,13 @@ Docs support:
 
 ```bash
 python -m pip install -r requirements-docs.txt
+```
+
+Test support:
+
+```bash
+python -m pip install -e ".[test]"
+tox
 ```
 
 This project includes a Rust extension. A working Rust toolchain is required:
@@ -113,11 +125,29 @@ client.search_instruments("apple", limit=5)
 client.resolve_symbol("Apple")
 ```
 
+Choose a market context:
+
+```python
+us = DataClient(market="US")
+au = DataClient(market="AU")
+india = DataClient(market="IN")
+
+au.search_instruments("bhp", limit=5)
+india.search_instruments("reliance", limit=5)
+```
+
 Fetch daily bars:
 
 ```python
 bars = client.fetch_bars("Apple", "2024-01-01", "2024-01-10")
 bars[:2]
+```
+
+Fetch Australian and Indian equities using names or exchange symbols:
+
+```python
+au_bars = DataClient(market="AU").fetch_bars("BHP", "2024-01-01", "2024-01-10")
+in_bars = DataClient(market="IN").fetch_bars("Reliance", "2024-01-01", "2024-01-10")
 ```
 
 Fetch intraday bars:
@@ -159,6 +189,148 @@ Approximate Yahoo retention limits:
 2m-30m   about 60 days
 60m/1h   about 730 days
 daily+   much longer
+```
+
+## Market Contexts
+
+`DataClient` defaults to the US market:
+
+```python
+client = DataClient()
+```
+
+Supported market contexts:
+
+```text
+US  United States
+AU  Australia
+IN  India
+```
+
+The client uses the market context for instrument discovery and Yahoo symbol resolution:
+
+```text
+US  AAPL          -> AAPL
+AU  BHP          -> BHP.AX
+IN  RELIANCE     -> RELIANCE.NS
+```
+
+You can also request a global discovery context:
+
+```python
+client = DataClient(market="all")
+client.search_instruments("bhp", markets=["US", "AU"])
+```
+
+Current free source choices:
+
+```text
+US instruments    Nasdaq Trader symbol directories
+AU instruments    ASX listed companies CSV
+IN instruments    NSE equity list CSV
+Bars              Yahoo Finance chart endpoint
+US bond yields    FRED public CSV
+```
+
+## Data Sources And Limitations
+
+`fincore-py` currently prefers free, public, and low-friction sources:
+
+```text
+Nasdaq Trader   US stock and ETF discovery
+ASX             Australian stock and ETF discovery
+NSE             Indian equity discovery
+Yahoo Finance   OHLCV bars for supported Yahoo symbols and intervals
+FRED            Public US Treasury yield observations
+```
+
+These sources are suitable for learning, prototyping, personal research, notebook exploration, stream-shape design, and downstream pipeline experiments. They are not a substitute for licensed exchange feeds, paid institutional datasets, audited historical data, or production trading infrastructure.
+
+Important limitations:
+
+- streams are delayed polling streams, not real exchange feeds
+- intraday availability depends on Yahoo's retention windows
+- source files and response schemas may change without notice
+- AU and IN bars depend on Yahoo suffix coverage such as `.AX` and `.NS`
+- current bond/yield support is US Treasury/FRED focused
+- no data completeness, survivorship-bias, corporate-action, or split-adjustment guarantees are provided
+
+## Output Shapes
+
+All public data methods return plain Python dictionaries. The schema is intentionally simple so downstream systems can serialize it to Kafka, JSONL, TimescaleDB, or future metric engines.
+
+Instrument:
+
+```python
+{
+    "source": "nasdaq_trader",
+    "symbol": "AAPL",
+    "yahoo_symbol": "AAPL",
+    "name": "Apple Inc. - Common Stock",
+    "market": "US",
+    "currency": "USD",
+    "asset_class": "stock",
+    "exchange": "NASDAQ",
+    "is_etf": False,
+    "raw": "...",
+}
+```
+
+Bar:
+
+```python
+{
+    "source": "yahoo",
+    "symbol": "AAPL",
+    "interval": "5m",
+    "timeframe": "5m",
+    "event_time": "2024-01-02T14:30:00+00:00",
+    "date": "2024-01-02",
+    "open": 100.0,
+    "high": 101.0,
+    "low": 99.5,
+    "close": 100.5,
+    "volume": 123456.0,
+    "received_time": "2024-01-02T14:31:00+00:00",
+    "raw": "...",
+}
+```
+
+Bond yield observation:
+
+```python
+{
+    "source": "fred",
+    "series_id": "DGS10",
+    "date": "2024-01-02",
+    "value": 4.0,
+    "received_time": "2024-01-02T00:00:00+00:00",
+    "raw": "2024-01-02,4.0",
+}
+```
+
+Stream events use the envelope shape below, with source-specific values nested in `payload`:
+
+```python
+{
+    "event_type": "bar",
+    "stream_type": "historical_replay",
+    "source": "yahoo",
+    "symbol": "AAPL",
+    "event_time": "2024-01-02T14:30:00+00:00",
+    "received_time": "2024-01-02T14:31:00+00:00",
+    "payload": {
+        "interval": "5m",
+        "timeframe": "5m",
+        "date": "2024-01-02",
+        "open": 100.0,
+        "high": 101.0,
+        "low": 99.5,
+        "close": 100.5,
+        "volume": 123456.0,
+    },
+    "raw": "...",
+}
 ```
 
 ## Streams
@@ -252,6 +424,17 @@ The docs explain:
 
 Docs are deployed to GitHub Pages from `.github/workflows/docs.yml` on pushes to `main`, version tags, and manual dispatch.
 
+## Testing
+
+The unit tests run through `tox` and avoid live network calls by stubbing the Rust-backed source functions:
+
+```bash
+python -m pip install -e ".[test]"
+tox
+```
+
+CI runs `tox`, `cargo fmt --check`, and `cargo check` from `.github/workflows/ci.yml`.
+
 ## Future Analytics Direction
 
 `fincore.analytics` will consume the same event envelopes produced by `fincore.data`.
@@ -289,8 +472,8 @@ git push origin v0.1.0a0
 
 The publish workflow at `.github/workflows/publish.yml` builds distributions for both main pushes and version tags.
 
-- Pushes to `main` publish development builds to TestPyPI.
-- Tags like `v0.1.0a0` publish releases to PyPI.
+- Pushes to `main` publish source-distribution development builds to TestPyPI.
+- Tags like `v0.1.0a0` build release wheels plus a source distribution and publish them to PyPI.
 
 Configure PyPI trusted publishing with:
 
@@ -310,4 +493,4 @@ Environment: testpypi
 
 ## Status
 
-Early implementation stage. The data client is usable for discovery, historical bars, yield series, replay streams, polling streams, and Kafka publishing. Analytics is planned next.
+Early alpha implementation stage. The data client is usable for discovery, historical bars, yield series, replay streams, polling streams, and Kafka publishing for personal research and prototyping. Analytics is planned next.

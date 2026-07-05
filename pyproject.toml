@@ -33,6 +33,11 @@ docs = [
   "furo>=2024.8.6",
   "sphinx>=8",
 ]
+test = [
+  "pytest>=8",
+  "pytest-cov>=6",
+  "tox>=4",
+]
 
 [project.urls]
 Documentation = "https://avi2413.github.io/fincore/"

@@ -21,6 +21,7 @@ The package imports as ``fincore`` and currently focuses on:
 
    getting_started
    concepts
+   schemas
    finance_concepts
    brand
    streaming

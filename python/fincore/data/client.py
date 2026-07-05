@@ -4,41 +4,65 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator, Iterable
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Literal
 
 from fincore import _fincore
 
 from .events import bar_event
 from .sources import FredBondSource, YahooFinanceSource
-from .utils import coerce_date, coerce_yahoo_period, lookback_start, normalize_search_text, score_instrument
+from .utils import (
+    coerce_date,
+    coerce_yahoo_period,
+    lookback_start,
+    normalize_markets,
+    normalize_search_text,
+    score_instrument,
+)
 
 AssetType = Literal["stock", "etf", "bond"]
+Market = Literal["US", "AU", "IN"]
 
 
 class DataClient:
     """Client for market data discovery, historical fetches, and simple streams."""
 
-    def __init__(self) -> None:
-        """Create a data client with an empty instrument cache."""
+    def __init__(self, market: str | Iterable[str] = "US") -> None:
+        """Create a data client with a market context and empty instrument cache.
 
+        :param market: Market context such as ``"US"``, ``"AU"``, ``"IN"``, or ``"all"``.
+        :type market: str | Iterable[str]
+        """
+
+        self.markets = normalize_markets(market)
         self._instrument_cache: list[dict[str, Any]] | None = None
 
-    def list_instruments(self, asset_types: Iterable[AssetType] | None = None) -> list[dict[str, Any]]:
+    def list_instruments(
+        self,
+        asset_types: Iterable[AssetType] | None = None,
+        markets: str | Iterable[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """Return available market instruments from free source directories.
 
-        Stocks and ETFs are sourced from Nasdaq Trader symbol directories.
+        Stocks and ETFs are sourced from Nasdaq Trader, ASX, and NSE directories.
         Bonds are represented as FRED Treasury yield series.
 
         :param asset_types: Optional asset classes to include.
         :type asset_types: Iterable[AssetType] | None
+        :param markets: Optional market override. Defaults to the client context.
+        :type markets: str | Iterable[str] | None
         :returns: Matching instrument dictionaries.
         :rtype: list[dict[str, Any]]
         """
 
         requested = set(asset_types or ("stock", "etf", "bond"))
+        requested_markets = self.markets if markets is None else normalize_markets(markets)
         all_instruments = self._all_instruments()
-        return [item for item in all_instruments if item["asset_class"] in requested]
+        return [
+            item
+            for item in all_instruments
+            if item["asset_class"] in requested and item.get("market", "US") in requested_markets
+        ]
 
     def refresh_instruments(self) -> list[dict[str, Any]]:
         """Refresh and return the locally cached source instrument directory.
@@ -55,6 +79,7 @@ class DataClient:
         query: str,
         *,
         asset_types: Iterable[AssetType] | None = None,
+        markets: str | Iterable[str] | None = None,
         limit: int = 10,
     ) -> list[dict[str, Any]]:
         """Return the closest symbol/name matches for a human query.
@@ -63,6 +88,8 @@ class DataClient:
         :type query: str
         :param asset_types: Optional asset classes to search.
         :type asset_types: Iterable[AssetType] | None
+        :param markets: Optional market override. Defaults to the client context.
+        :type markets: str | Iterable[str] | None
         :param limit: Maximum number of matches to return.
         :type limit: int
         :returns: Matched instruments enriched with score and reason.
@@ -78,7 +105,7 @@ class DataClient:
             return []
 
         matches: list[dict[str, Any]] = []
-        for instrument in self.list_instruments(asset_types):
+        for instrument in self.list_instruments(asset_types, markets=markets):
             score, reason = score_instrument(normalized_query, instrument)
             if score <= 0:
                 continue
@@ -96,6 +123,7 @@ class DataClient:
         query: str,
         *,
         asset_types: Iterable[AssetType] | None = None,
+        markets: str | Iterable[str] | None = None,
         min_score: float = 0.65,
     ) -> dict[str, Any]:
         """Resolve a symbol or fuzzy company/fund name to one instrument.
@@ -104,6 +132,8 @@ class DataClient:
         :type query: str
         :param asset_types: Optional asset classes to search.
         :type asset_types: Iterable[AssetType] | None
+        :param markets: Optional market override. Defaults to the client context.
+        :type markets: str | Iterable[str] | None
         :param min_score: Minimum fuzzy score required for automatic resolution.
         :type min_score: float
         :returns: Best instrument match with alternatives.
@@ -111,7 +141,7 @@ class DataClient:
         :raises ValueError: If no confident match is found.
         """
 
-        matches = self.search_instruments(query, asset_types=asset_types, limit=10)
+        matches = self.search_instruments(query, asset_types=asset_types, markets=markets, limit=10)
         if not matches:
             raise ValueError(f"no instruments matched {query!r}")
 
@@ -129,6 +159,7 @@ class DataClient:
         query: str,
         *,
         asset_types: Iterable[AssetType] | None = None,
+        markets: str | Iterable[str] | None = None,
         min_score: float = 0.65,
     ) -> str:
         """Resolve a human query to the canonical source symbol.
@@ -137,13 +168,21 @@ class DataClient:
         :type query: str
         :param asset_types: Optional asset classes to search.
         :type asset_types: Iterable[AssetType] | None
+        :param markets: Optional market override. Defaults to the client context.
+        :type markets: str | Iterable[str] | None
         :param min_score: Minimum fuzzy score required for automatic resolution.
         :type min_score: float
         :returns: Canonical source symbol.
         :rtype: str
         """
 
-        return self.resolve_instrument(query, asset_types=asset_types, min_score=min_score)["symbol"]
+        instrument = self.resolve_instrument(
+            query,
+            asset_types=asset_types,
+            markets=markets,
+            min_score=min_score,
+        )
+        return instrument.get("yahoo_symbol") or instrument["symbol"]
 
     def list_stocks(self) -> list[dict[str, Any]]:
         """Return available stock symbols.

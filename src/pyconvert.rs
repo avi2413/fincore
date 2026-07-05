@@ -41,7 +41,10 @@ pub fn instrument_to_py(py: Python<'_>, instrument: &Instrument) -> PyResult<Py<
     let dict = PyDict::new(py);
     dict.set_item("source", &instrument.source)?;
     dict.set_item("symbol", &instrument.symbol)?;
+    dict.set_item("yahoo_symbol", &instrument.yahoo_symbol)?;
     dict.set_item("name", &instrument.name)?;
+    dict.set_item("market", &instrument.market)?;
+    dict.set_item("currency", &instrument.currency)?;
     dict.set_item("asset_class", &instrument.asset_class)?;
     dict.set_item("exchange", &instrument.exchange)?;
     dict.set_item("is_etf", instrument.is_etf)?;
@@ -61,7 +64,10 @@ pub fn bond_to_py(py: Python<'_>, bond: &BondSeries) -> PyResult<Py<PyDict>> {
     let dict = PyDict::new(py);
     dict.set_item("source", &bond.source)?;
     dict.set_item("symbol", &bond.symbol)?;
+    dict.set_item("yahoo_symbol", &bond.symbol)?;
     dict.set_item("name", &bond.name)?;
+    dict.set_item("market", "US")?;
+    dict.set_item("currency", "USD")?;
     dict.set_item("asset_class", "bond")?;
     dict.set_item("maturity", &bond.maturity)?;
     dict.set_item("is_etf", false)?;

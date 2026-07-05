@@ -49,8 +49,14 @@ pub struct Bar {
 /// :vartype source: String
 /// :ivar symbol: Listed ticker symbol.
 /// :vartype symbol: String
+/// :ivar yahoo_symbol: Yahoo Finance symbol used for chart requests.
+/// :vartype yahoo_symbol: String
 /// :ivar name: Security name.
 /// :vartype name: String
+/// :ivar market: Market context, such as ``"US"``, ``"AU"``, or ``"IN"``.
+/// :vartype market: String
+/// :ivar currency: Trading currency where known.
+/// :vartype currency: String
 /// :ivar asset_class: ``"stock"`` or ``"etf"``.
 /// :vartype asset_class: String
 /// :ivar exchange: Optional exchange code/name.
@@ -63,7 +69,10 @@ pub struct Bar {
 pub struct Instrument {
     pub source: String,
     pub symbol: String,
+    pub yahoo_symbol: String,
     pub name: String,
+    pub market: String,
+    pub currency: String,
     pub asset_class: String,
     pub exchange: Option<String>,
     pub is_etf: bool,

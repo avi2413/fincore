@@ -34,6 +34,33 @@ Current implemented functionality lives under ``fincore.data``.
 * replaying historical bars as streams
 * polling latest delayed bars as streams
 
+Market context
+--------------
+
+The client currently supports three market contexts:
+
+US
+    United States. Instrument discovery uses public Nasdaq Trader symbol
+    directories. Yahoo symbols are usually unchanged, for example ``AAPL``.
+
+AU
+    Australia. Instrument discovery uses the public ASX listed companies CSV.
+    Yahoo symbols use the ``.AX`` suffix, for example ``BHP.AX``.
+
+IN
+    India. Instrument discovery uses the NSE equity list CSV. Yahoo symbols use
+    the ``.NS`` suffix, for example ``RELIANCE.NS``.
+
+The market context is set during client creation:
+
+.. code-block:: python
+
+   us = DataClient(market="US")
+   au = DataClient(market="AU")
+   india = DataClient(market="IN")
+
+Use ``market="all"`` to search all implemented contexts.
+
 Analytics namespace
 -------------------
 
@@ -50,6 +77,12 @@ Yahoo Finance
 
 Nasdaq Trader Symbol Directory
     Used for public stock and ETF symbol discovery.
+
+ASX listed companies CSV
+    Used for Australian stock and ETF discovery.
+
+NSE equity list CSV
+    Used for Indian stock discovery.
 
 FRED
     Used for public Treasury yield series such as ``DGS10``.
@@ -107,4 +140,3 @@ Lookback
 It means: each poll asks Yahoo for the latest one day of one-minute bars, then
 emits only bars that have not already been seen. It is a data-fetching window,
 not an analytics window.
-

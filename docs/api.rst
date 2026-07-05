@@ -8,6 +8,13 @@ Data client
    :members:
    :undoc-members:
 
+Market constants
+----------------
+
+.. autodata:: fincore.data.SUPPORTED_MARKETS
+
+.. autodata:: fincore.data.SUPPORTED_INTERVALS
+
 Sources
 -------
 
@@ -34,4 +41,3 @@ Kafka
 
 .. automodule:: fincore.data.kafka
    :members:
-
