@@ -1,14 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="820" height="180" viewBox="0 0 820 180" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="300" viewBox="0 0 1440 300" role="img" aria-labelledby="title desc">
   <title id="title">fincore wordmark</title>
-  <desc id="desc">Lean noir brutalist fincore wordmark with a restrained market signal mark.</desc>
-  <rect width="820" height="180" fill="#0D0D0D"/>
-  <g transform="translate(52 48)">
-    <rect x="0" y="0" width="84" height="84" fill="none" stroke="#B8B2A4" stroke-width="2"/>
-    <path d="M16 56 H31 L42 42 L53 48 L68 25" fill="none" stroke="#7A1E1E" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
-    <path d="M16 68 H68" stroke="#2A2A2A" stroke-width="2"/>
-    <path d="M16 16 V68" stroke="#2A2A2A" stroke-width="2"/>
+  <desc id="desc">Noir brutalist fincore wordmark showing event streams, normalized data, and analytics signals.</desc>
+  <rect width="1440" height="300" fill="#0B0B0B"/>
+  <path d="M0 246H1440" stroke="#191919" stroke-width="2"/>
+  <path d="M0 68H1440" stroke="#151515" stroke-width="2"/>
+  <g transform="translate(82 70)">
+    <rect x="0" y="0" width="160" height="160" fill="none" stroke="#D9D2C3" stroke-width="3"/>
+    <path d="M24 40H66M94 40H136M24 80H52M80 80H136M24 120H70M98 120H136" stroke="#6F6A61" stroke-width="5" stroke-linecap="square"/>
+    <circle cx="76" cy="40" r="8" fill="#8F1D1D"/>
+    <circle cx="66" cy="80" r="8" fill="#D9D2C3"/>
+    <circle cx="84" cy="120" r="8" fill="#8F1D1D"/>
+    <path d="M32 136L58 108L82 116L112 72L132 88" fill="none" stroke="#D9D2C3" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+    <path d="M32 136L58 108L82 116L112 72L132 88" fill="none" stroke="#8F1D1D" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
   </g>
-  <text x="164" y="96" fill="#E7E0D0" font-family="'Arial Narrow', 'Helvetica Neue Condensed Bold', 'Roboto Condensed', Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="6">FINCORE</text>
-  <path d="M166 111 H474" stroke="#7A1E1E" stroke-width="3"/>
-  <text x="166" y="139" fill="#8F8A80" font-family="'Arial Narrow', 'Roboto Condensed', Arial, sans-serif" font-size="17" letter-spacing="4">MARKET DATA INFRASTRUCTURE</text>
+  <text x="282" y="144" fill="#EFE8D8" font-family="'Arial Narrow', 'Helvetica Neue Condensed Bold', 'Roboto Condensed', Arial, sans-serif" font-size="102" font-weight="800" letter-spacing="10">FINCORE</text>
+  <path d="M286 166H934" stroke="#8F1D1D" stroke-width="5"/>
+  <text x="288" y="212" fill="#A8A096" font-family="'Arial Narrow', 'Roboto Condensed', Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="5">EVENT-DRIVEN DATA + ANALYTICS INFRASTRUCTURE</text>
+  <g transform="translate(1058 86)" stroke-linecap="square">
+    <path d="M0 32H245" stroke="#2A2A2A" stroke-width="3"/>
+    <path d="M0 76H245" stroke="#2A2A2A" stroke-width="3"/>
+    <path d="M0 120H245" stroke="#2A2A2A" stroke-width="3"/>
+    <path d="M22 32H66L94 76H146L174 120H226" stroke="#8F1D1D" stroke-width="5" fill="none"/>
+    <path d="M22 120H70L102 76H150L182 32H226" stroke="#D9D2C3" stroke-width="4" fill="none"/>
+    <circle cx="94" cy="76" r="7" fill="#D9D2C3"/>
+    <circle cx="174" cy="120" r="7" fill="#8F1D1D"/>
+    <circle cx="182" cy="32" r="7" fill="#D9D2C3"/>
+  </g>
 </svg>

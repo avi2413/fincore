@@ -10,18 +10,36 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fincore-py"
 dynamic = ["version"]
-description = "Python-facing financial market data access library powered by Rust."
+description = "Event-driven financial data and analytics framework for real-time market infrastructure."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
-  { name = "fincore contributors" }
+  { name = "Avinash Chandra" }
 ]
-keywords = ["finance", "market-data", "rust", "python"]
+keywords = [
+  "analytics",
+  "event-driven",
+  "finance",
+  "financial-data",
+  "kafka",
+  "market-data",
+  "metrics",
+  "python",
+  "quant",
+  "real-time",
+  "rust",
+  "streaming",
+]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Financial and Insurance Industry",
   "Programming Language :: Python :: 3",
   "Programming Language :: Rust",
+  "Topic :: Database",
+  "Topic :: Scientific/Engineering :: Information Analysis",
   "Topic :: Office/Business :: Financial",
 ]
 
@@ -42,6 +60,7 @@ test = [
 [project.urls]
 Documentation = "https://avi2413.github.io/fincore/"
 Repository = "https://github.com/avi2413/fincore"
+Issues = "https://github.com/avi2413/fincore/issues"
 
 [tool.setuptools]
 package-dir = { "" = "python" }

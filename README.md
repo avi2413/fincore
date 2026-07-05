@@ -1,10 +1,11 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/avi2413/fincore/main/docs/_static/fincore-wordmark.svg" alt="fincore wordmark" width="520">
+  <img src="https://raw.githubusercontent.com/avi2413/fincore/main/docs/_static/fincore-wordmark.svg" alt="fincore wordmark" width="100%">
 </p>
 
 <p align="center">
   <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/v/fincore-py.svg?color=111111&label=PyPI" alt="PyPI version"></a>
   <a href="https://pypi.org/project/fincore-py/#history"><img src="https://img.shields.io/badge/PyPI-dev%20builds-7A1E1E" alt="PyPI dev builds"></a>
+  <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/pyversions/fincore-py.svg?color=111111" alt="Python versions"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/ci.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/ci.yml/badge.svg" alt="CI workflow"></a>
   <a href="https://codecov.io/gh/avi2413/fincore"><img src="https://codecov.io/gh/avi2413/fincore/branch/main/graph/badge.svg" alt="Codecov coverage"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/publish.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/publish.yml/badge.svg" alt="Publish workflow"></a>
@@ -15,17 +16,17 @@
 
 # fincore
 
-`fincore` is a developer-first financial data library.
+`fincore` is an event-driven financial data and analytics framework for building real-time market infrastructure.
 
-The package is designed for software and data engineers who understand systems, streams, schemas, and downstream storage, but may not yet know finance. The motive is to create a financial data product with a very low barrier of use and understanding: ask for `"Apple"`, get `AAPL`; ask for `"10 year treasury"`, get a usable yield series; ask for a recent minute range, get normalized market events that can flow into Kafka, TimescaleDB, notebooks, or future analytics.
+The package is designed for software and data engineers who think in streams, schemas, event envelopes, metrics, and downstream storage. It provides a low-barrier way to build market-data pipelines: resolve `"Apple"` to `AAPL`, fetch or replay bars, emit Kafka-ready events, derive normalized analytics events, and feed those events into notebooks, databases, stream processors, or future inference systems.
 
-This is a personal research project and an early alpha package. It is not a production-grade market data client, trading system, investment tool, or source of financial advice. Free public data sources can be delayed, incomplete, rate limited, schema-changing, or unavailable.
+This is a personal research project by Avinash Chandra and a beta-stage package. It is not a production-grade market data client, trading system, investment tool, or source of financial advice. Free public data sources can be delayed, incomplete, rate limited, schema-changing, or unavailable.
 
 The Python import name is `fincore`. The PyPI distribution name is `fincore-py`.
 
 ## Current Scope
 
-`fincore-py` currently focuses on data access, not trading or portfolio analytics.
+`fincore-py` currently focuses on data access, event streams, and metrics. It does not do trading, order execution, portfolio construction, or investment recommendations.
 
 Implemented today:
 
@@ -69,6 +70,7 @@ Rust extension
   Yahoo Finance bar fetching
   Nasdaq Trader, ASX, and NSE directory parsing
   FRED yield fetching
+  metric calculations
   normalized Python dict conversion
 ```
 
@@ -127,6 +129,8 @@ client = DataClient()
 client.search_instruments("apple", limit=5)
 client.resolve_symbol("Apple")
 ```
+
+More complete examples live in [`examples/`](examples/).
 
 Choose a market context:
 
@@ -449,7 +453,7 @@ The docs explain:
 - market data concepts for non-finance developers
 - streaming and Kafka concepts
 - the current API surface
-- future analytics direction
+- analytics calculations and metric events
 
 Docs are deployed to GitHub Pages from `.github/workflows/docs.yml` on pushes to `main`, version tags, and manual dispatch.
 
@@ -538,6 +542,18 @@ async for metric_event in engine.run(client.stream_bars(["Apple"], interval="1m"
 
 Python package versions are derived from git tags through `setuptools-scm`.
 
+Install the latest beta/dev package from PyPI:
+
+```bash
+python -m pip install fincore-py
+```
+
+Kafka extras:
+
+```bash
+python -m pip install "fincore-py[kafka]"
+```
+
 For a beta pre-release:
 
 ```bash
@@ -561,4 +577,4 @@ Environment: pypi
 
 ## Status
 
-Early alpha implementation stage. The data client is usable for discovery, historical bars, yield series, replay streams, polling streams, and Kafka publishing for personal research and prototyping. The analytics layer now emits normalized metric events for batch and streaming workflows.
+Beta implementation stage. The data client is usable for discovery, historical bars, yield series, replay streams, polling streams, and Kafka publishing for personal research and prototyping. The analytics layer emits normalized metric events for batch and streaming workflows.

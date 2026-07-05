@@ -1,9 +1,10 @@
 fincore-py documentation
 ========================
 
-``fincore-py`` is a developer-first financial data library. It is designed for
-engineers who understand data systems, streams, schemas, and downstream storage,
-but may not yet know market conventions or financial terminology.
+``fincore-py`` is an event-driven financial data and analytics framework for
+building real-time market infrastructure. It is designed for engineers who
+understand data systems, streams, schemas, and downstream storage, but may not
+yet know market conventions or financial terminology.
 
 The package imports as ``fincore`` and currently focuses on:
 
@@ -14,6 +15,7 @@ The package imports as ``fincore`` and currently focuses on:
 * historical replay streams
 * delayed polling streams for latest bars
 * Kafka-ready event envelopes
+* normalized analytics metric events
 
 .. toctree::
    :maxdepth: 2

@@ -1,6 +1,6 @@
 project = "fincore-py"
-author = "fincore contributors"
-copyright = "2026, fincore contributors"
+author = "Avinash Chandra"
+copyright = "2026, Avinash Chandra"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",

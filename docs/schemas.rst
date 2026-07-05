@@ -2,7 +2,7 @@ Output schemas
 ==============
 
 ``fincore-py`` returns plain Python dictionaries. The shapes below are the
-public contract for the current alpha data layer.
+public contract for the current beta data and analytics layers.
 
 Instrument
 ----------
