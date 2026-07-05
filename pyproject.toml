@@ -12,7 +12,7 @@ name = "fincore-py"
 dynamic = ["version"]
 description = "Event-driven financial data and analytics framework for real-time market infrastructure."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.14,<3.15"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
@@ -36,7 +36,7 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Intended Audience :: Financial and Insurance Industry",
-  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Rust",
   "Topic :: Database",
   "Topic :: Scientific/Engineering :: Information Analysis",

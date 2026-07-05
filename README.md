@@ -3,15 +3,19 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/v/fincore-py.svg?color=111111&label=PyPI" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/fincore-py/#history"><img src="https://img.shields.io/badge/PyPI-dev%20builds-7A1E1E" alt="PyPI dev builds"></a>
-  <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/pyversions/fincore-py.svg?color=111111" alt="Python versions"></a>
+  <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/v/fincore-py.svg?color=111111&label=PyPI&logo=pypi&logoColor=white" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/pypi/dm/fincore-py.svg?color=7A1E1E&label=downloads&logo=pypi&logoColor=white" alt="PyPI downloads"></a>
+  <a href="https://pypi.org/project/fincore-py/#history"><img src="https://img.shields.io/badge/PyPI-dev%20builds-7A1E1E?logo=pypi&logoColor=white" alt="PyPI dev builds"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.14-111111?logo=python&logoColor=white" alt="Python 3.14"></a>
+  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-core-7A1E1E?logo=rust&logoColor=white" alt="Rust core"></a>
+  <a href="https://kafka.apache.org/"><img src="https://img.shields.io/badge/kafka-optional-111111?logo=apachekafka&logoColor=white" alt="Optional Kafka support"></a>
+  <a href="https://pypi.org/project/fincore-py/"><img src="https://img.shields.io/badge/status-beta-111111?logo=semanticrelease&logoColor=white" alt="Beta status"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/ci.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/ci.yml/badge.svg" alt="CI workflow"></a>
   <a href="https://codecov.io/gh/avi2413/fincore"><img src="https://codecov.io/gh/avi2413/fincore/branch/main/graph/badge.svg" alt="Codecov coverage"></a>
-  <a href="https://github.com/avi2413/fincore/actions/workflows/publish.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/publish.yml/badge.svg" alt="Publish workflow"></a>
   <a href="https://github.com/avi2413/fincore/actions/workflows/docs.yml"><img src="https://github.com/avi2413/fincore/actions/workflows/docs.yml/badge.svg" alt="Docs workflow"></a>
-  <a href="https://avi2413.github.io/fincore/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-111111" alt="Documentation"></a>
-  <a href="https://github.com/avi2413/fincore/blob/main/LICENSE"><img src="https://img.shields.io/github/license/avi2413/fincore.svg?color=7A1E1E" alt="License"></a>
+  <a href="https://avi2413.github.io/fincore/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-111111?logo=githubpages&logoColor=white" alt="Documentation"></a>
+  <a href="https://github.com/avi2413/fincore/issues"><img src="https://img.shields.io/github/issues/avi2413/fincore.svg?color=7A1E1E&logo=github&logoColor=white" alt="GitHub issues"></a>
+  <a href="https://github.com/avi2413/fincore/blob/main/LICENSE"><img src="https://img.shields.io/github/license/avi2413/fincore.svg?color=111111&logo=opensourceinitiative&logoColor=white" alt="License"></a>
 </p>
 
 # fincore
@@ -76,15 +80,29 @@ Rust extension
 
 ## Installation
 
-Create and activate a Python environment, then install build dependencies:
+Install from PyPI:
 
 ```bash
+python --version  # requires Python 3.14
+python -m pip install fincore-py
+```
+
+Kafka support:
+
+```bash
+python -m pip install "fincore-py[kafka]"
+```
+
+For local development, create and activate a Python environment, then install build dependencies:
+
+```bash
+python --version  # requires Python 3.14
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
-Kafka support:
+Local Kafka development:
 
 ```bash
 python -m pip install -r requirements-kafka.txt
@@ -538,42 +556,11 @@ async for metric_event in engine.run(client.stream_bars(["Apple"], interval="1m"
     ...
 ```
 
-## Versioning And Publishing
+## Contributions And Issues
 
-Python package versions are derived from git tags through `setuptools-scm`.
+Issues, bug reports, documentation fixes, and focused feature suggestions are welcome through [GitHub Issues](https://github.com/avi2413/fincore/issues).
 
-Install the latest beta/dev package from PyPI:
-
-```bash
-python -m pip install fincore-py
-```
-
-Kafka extras:
-
-```bash
-python -m pip install "fincore-py[kafka]"
-```
-
-For a beta pre-release:
-
-```bash
-git tag v0.1.0b0
-git push origin v0.1.0b0
-```
-
-The publish workflow at `.github/workflows/publish.yml` builds distributions for both main pushes and version tags.
-
-- Pushes to `main` publish source-distribution development builds to PyPI, using versions like `0.1.0.dev123`.
-- Tags like `v0.1.0b0` build beta wheels plus a source distribution and publish them to PyPI.
-- Later stable tags like `v0.1.0` can use the same tagged release path.
-
-Configure PyPI trusted publishing with:
-
-```text
-Repository: <owner>/fincore
-Workflow: publish.yml
-Environment: pypi
-```
+This is still a personal research project, so contributions should stay aligned with the current scope: event-driven market data access, normalized schemas, streaming events, Kafka integration, and analytics metrics. Production trading, order execution, and investment advice are intentionally out of scope.
 
 ## Status
 
